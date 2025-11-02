@@ -1,0 +1,8 @@
+//
+// Created by Celso Jordão on 01/11/2025.
+//
+
+#ifndef SIMGARDEN_FERRAMENTAZ_H
+#define SIMGARDEN_FERRAMENTAZ_H
+
+#endif //SIMGARDEN_FERRAMENTAZ_H
