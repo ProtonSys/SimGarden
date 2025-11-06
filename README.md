@@ -1,6 +1,6 @@
 # 🌱 Simulador de Jardim - POO 2025/2026
 
-**Autores:** [Nome Aluno 1 - Número], [Nome Aluno 2 - Número]  
+**Autores:** CelsoJordão - 2003008910  
 **Curso:** Engenharia Informática - ISEC  
 **Cadeira:** Programação Orientada a Objetos  
 **Meta:** 1 (de 2)
@@ -452,12 +452,12 @@ public:
 
 ## 👥 Autores
 
-- **[Nome Aluno 1]** - [Número] - [email@isec.pt]
-- **[Nome Aluno 2]** - [Número] - [email@isec.pt]
+- **Celso Jordão** - 2003008910 - a21130067@isec.pt
+
 
 **Turma:** [Turma]  
 **Ano Letivo:** 2025/2026  
-**Data:** Novembro 2025
+**Data: Novembro 2025
 
 ---
 
