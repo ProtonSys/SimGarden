@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/SimuladorJardim.dir/core/Interface.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/core/Interface.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/core/Simulator.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/core/Simulator.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/core/Validator.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/core/Validator.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/Ferramenta.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/Ferramenta.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/FerramentaZ.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/FerramentaZ.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/PacoteAdubo.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/PacoteAdubo.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/Regador.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/Regador.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/TesouraPoda.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/ferramentas/TesouraPoda.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/jardim/Jardim.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/jardim/Jardim.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/jardim/Posicao.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/jardim/Posicao.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/jardineiro/Jardineiro.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/jardineiro/Jardineiro.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/main.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/main.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/plantas/Cacto.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/plantas/Cacto.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/plantas/ErvaDaninha.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/plantas/ErvaDaninha.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/plantas/Planta.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/plantas/Planta.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/plantas/PlantaExotica.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/plantas/PlantaExotica.cpp.o.d"
+  "CMakeFiles/SimuladorJardim.dir/plantas/Roseira.cpp.o"
+  "CMakeFiles/SimuladorJardim.dir/plantas/Roseira.cpp.o.d"
+  "SimuladorJardim"
+  "SimuladorJardim.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/SimuladorJardim.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

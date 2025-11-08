@@ -28,7 +28,11 @@ bool Validator::validaInt(const std::string& str, int& valor) {
         size_t pos;
         valor = std::stoi(str, &pos);
         return pos == str.length() && valor >= 0;
-    } catch (...) {
+    } catch (const std::invalid_argument&) {
+        // String does not contain a valid integer
+        return false;
+    } catch (const std::out_of_range&) {
+        // Number is too large to fit in an int
         return false;
     }
 }

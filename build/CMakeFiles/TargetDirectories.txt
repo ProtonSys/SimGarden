@@ -1,0 +1,3 @@
+/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/build/CMakeFiles/SimuladorJardim.dir
+/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/build/CMakeFiles/edit_cache.dir
+/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/build/CMakeFiles/rebuild_cache.dir

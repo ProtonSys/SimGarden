@@ -3,31 +3,31 @@
 //
 #include "Simulator.h"
 #include "Interface.h"
+#include "../plantas/Cacto.h"
+#include "../plantas/Roseira.h"
+#include "../plantas/ErvaDaninha.h"
+#include "../plantas/PlantaExotica.h"
+#include "../ferramentas/Regador.h"
+#include "../ferramentas/PacoteAdubo.h"
+#include "../ferramentas/TesouraPoda.h"
+#include "../ferramentas/FerramentaZ.h"
 
 #include <iostream>
 
-Simulator::Simulator() 
-    : jardim(nullptr), jardineiro(nullptr),
+Simulator::Simulator()
+    : jardim(nullptr), jardineiro(std::make_unique<Jardineiro>()),
       plantasColhidasTurno(0), plantasPlantadasTurno(0),
       entrouEsteTurno(false), saiuEsteTurno(false) {
-    
-    jardineiro = new Jardineiro();
 }
 
 Simulator::~Simulator() {
-    if (jardim != nullptr) {
-        delete jardim;
-    }
-    if (jardineiro != nullptr) {
-        delete jardineiro;
-    }
+    // Smart pointers automatically clean up
+    // No manual delete needed
 }
 
 void Simulator::criaJardim(int linhas, int colunas) {
-    if (jardim != nullptr) {
-        delete jardim;
-    }
-    jardim = new Jardim(linhas, colunas);
+    // unique_ptr automatically deletes old jardim if it exists
+    jardim = std::make_unique<Jardim>(linhas, colunas);
     std::cout << "Jardim " << linhas << "x" << colunas << " criado!" << std::endl;
 }
 
@@ -37,7 +37,7 @@ void Simulator::avanca(int numInstantes) {
 }
 
 void Simulator::renderizaJardim() const {
-    if (jardim == nullptr) {
+    if (!jardim) {
         std::cout << "[Jardim ainda nao foi criado]" << std::endl;
         return;
     }
@@ -129,4 +129,46 @@ bool Simulator::recuperaEstado(const std::string& nome) {
 void Simulator::apagaEstado(const std::string& nome) {
     std::cout << "[TODO] Apagar estado '" << nome << "'" << std::endl;
     // TODO Meta 2
+}
+
+// Factory method for creating plants
+Planta* Simulator::criaPlanta(char tipo) const {
+    switch (tipo) {
+        case 'c':
+        case 'C':
+            return new Cacto();
+        case 'r':
+        case 'R':
+            return new Roseira();
+        case 'e':
+        case 'E':
+            return new ErvaDaninha();
+        case 'x':
+        case 'X':
+            return new PlantaExotica();
+        default:
+            return nullptr;
+    }
+}
+
+// Factory method for creating tools
+Ferramenta* Simulator::criaFerramenta(char tipo) const {
+    static int proximoNumeroSerie = 1;
+
+    switch (tipo) {
+        case 'g':
+        case 'G':
+            return new Regador(proximoNumeroSerie++);
+        case 'a':
+        case 'A':
+            return new PacoteAdubo(proximoNumeroSerie++);
+        case 't':
+        case 'T':
+            return new TesouraPoda(proximoNumeroSerie++);
+        case 'z':
+        case 'Z':
+            return new FerramentaZ(proximoNumeroSerie++);
+        default:
+            return nullptr;
+    }
 }

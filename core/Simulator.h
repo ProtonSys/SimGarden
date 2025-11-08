@@ -9,17 +9,18 @@
 #include "Jardineiro.h"
 #include <string>
 #include <map>
+#include <memory>
 
 class Jardim;
 class Jardineiro;
 
 class Simulator {
-    Jardim* jardim;
-    Jardineiro* jardineiro;
+    std::unique_ptr<Jardim> jardim;
+    std::unique_ptr<Jardineiro> jardineiro;
 
     // Para gravação/recuperação de estados
-    std::map<std::string, Jardim*> estadosGravados;
-    std::map<std::string, Jardineiro*> jardineirosGravados;
+    std::map<std::string, std::unique_ptr<Jardim>> estadosGravados;
+    std::map<std::string, std::unique_ptr<Jardineiro>> jardineirosGravados;
 
     // Contadores de ações por turno
     int plantasColhidasTurno;
@@ -70,8 +71,8 @@ public:
     void apagaEstado(const std::string& nome);
 
     // Getters
-    Jardim* getJardim() { return jardim; }
-    Jardineiro* getJardineiro() { return jardineiro; }
+    Jardim* getJardim() { return jardim.get(); }
+    Jardineiro* getJardineiro() { return jardineiro.get(); }
 
 private:
     void resetaContadoresTurno();
