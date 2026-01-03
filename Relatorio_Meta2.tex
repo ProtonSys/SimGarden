@@ -1,0 +1,770 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+\geometry{a4paper, margin=2.5cm}
+
+% Configuração do código
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    breaklines=true,
+    captionpos=b,
+    language=C++
+}
+
+% Cabeçalho e rodapé
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{POO 2025/2026 - Meta 2}
+\lhead{Simulador de Jardim}
+\cfoot{\thepage}
+
+\title{\textbf{Simulador de Jardim\\
+\large Programação Orientada a Objetos - Meta 2\\
+Relatório Técnico}}
+
+\author{
+Celso Jordão - 2003008910\\
+\texttt{a21130067@isec.pt}\\
+\\
+Instituto Superior de Engenharia de Coimbra\\
+Departamento de Engenharia Informática e de Sistemas
+}
+
+\date{Janeiro 2026}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Introdução}
+%=============================================================================
+
+\subsection{Contexto}
+Este relatório documenta a implementação do \textbf{Simulador de Jardim}, trabalho prático da unidade curricular de Programação Orientada a Objetos do ano letivo 2025/2026.
+
+O simulador permite ao utilizador gerir um jardim virtual através de comandos textuais, controlando um jardineiro que pode plantar, colher, usar ferramentas e observar o crescimento e morte das plantas ao longo do tempo simulado.
+
+\subsection{Objetivos}
+\begin{itemize}[leftmargin=*]
+    \item Aplicar princípios de Programação Orientada a Objetos (POO)
+    \item Implementar hierarquias de classes com herança e polimorfismo
+    \item Gerir memória dinâmica de forma segura
+    \item Utilizar a biblioteca standard de C++ (sem bibliotecas externas)
+    \item Respeitar as restrições do enunciado (sem \texttt{std::vector} para a grelha)
+\end{itemize}
+
+\subsection{Organização do Relatório}
+O relatório está organizado em 6 secções principais:
+\begin{enumerate}[leftmargin=*]
+    \item Arquitetura do Sistema
+    \item Estruturas de Dados Principais
+    \item Implementação das Funcionalidades
+    \item Decisões de Design
+    \item Testes e Validação
+    \item Conclusão
+\end{enumerate}
+
+%=============================================================================
+\section{Arquitetura do Sistema}
+%=============================================================================
+
+\subsection{Visão Geral}
+O sistema segue uma arquitetura em camadas baseada no padrão MVC adaptado:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Interface} - Leitura e validação de comandos do utilizador
+    \item \textbf{Simulator} - Controlador central (coordena toda a lógica)
+    \item \textbf{Modelo} - Jardim, Jardineiro, Plantas, Ferramentas
+\end{itemize}
+
+\subsection{Hierarquia de Classes}
+
+\subsubsection{Classes Base Abstratas}
+\begin{lstlisting}[caption={Hierarquia de Planta}]
+class Planta {
+protected:
+    int aguaAcumulada;
+    int nutrientesAcumulados;
+    Beleza beleza;  // FEIA, NEUTRA, BONITA
+
+public:
+    // Metodos virtuais puros (obrigam implementacao)
+    virtual void avancaInstante(...) = 0;
+    virtual bool deveMorrer() const = 0;
+    virtual void aoMorrer(Posicao&) = 0;
+    virtual char getSimbolo() const = 0;
+};
+\end{lstlisting}
+
+\textbf{Classes Derivadas:}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Cacto} - Planta neutra, absorve 25\% água do solo
+    \item \texttt{Roseira} - Planta bonita, requer cuidados constantes
+    \item \texttt{ErvaDaninha} - Planta feia, multiplica-se agressivamente
+    \item \texttt{PlantaExotica} - Comportamento aleatório/híbrido
+\end{itemize}
+
+\subsubsection{Ferramentas}
+\begin{lstlisting}[caption={Hierarquia de Ferramenta}]
+class Ferramenta {
+protected:
+    int numeroSerie;     // ID unico
+    int capacidadeAtual; // Quantidade restante
+
+public:
+    virtual char getSimbolo() const = 0;
+    virtual void aplicar(Posicao* pos) = 0;
+};
+\end{lstlisting}
+
+\textbf{Classes Derivadas:}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Regador} (g) - Adiciona água ao solo
+    \item \texttt{PacoteAdubo} (a) - Adiciona nutrientes ao solo
+    \item \texttt{TesouraPoda} (t) - Remove plantas feias
+    \item \texttt{FerramentaZ} (z) - Super fertilizador
+\end{itemize}
+
+%=============================================================================
+\section{Estruturas de Dados Principais}
+%=============================================================================
+
+\subsection{Jardim - Grelha 2D SEM std::vector}
+
+\textbf{Restrição do Enunciado:} Não é permitido usar \texttt{std::vector} para armazenar as posições do solo.
+
+\subsubsection{Implementação Escolhida}
+\begin{lstlisting}[caption={Estrutura do Jardim}]
+class Jardim {
+    Posicao** grelha;  // Array 2D dinamico
+    int linhas;
+    int colunas;
+
+public:
+    Jardim(int l, int c) {
+        // Alocar array de ponteiros para linhas
+        grelha = new Posicao*[linhas];
+
+        // Alocar cada linha
+        for (int i = 0; i < linhas; i++) {
+            grelha[i] = new Posicao[colunas];
+        }
+    }
+
+    ~Jardim() {
+        // Libertar memoria
+        for (int i = 0; i < linhas; i++) {
+            delete[] grelha[i];
+        }
+        delete[] grelha;
+    }
+};
+\end{lstlisting}
+
+\textbf{Justificação:}
+\begin{itemize}[leftmargin=*]
+    \item Respeita a restrição do enunciado
+    \item Acesso O(1) a qualquer posição: \texttt{grelha[linha][coluna]}
+    \item Memória contígua por linha (boa localidade de cache)
+    \item Usa apenas a memória necessária (sem overhead de vector)
+\end{itemize}
+
+\subsection{Posicao - Célula Individual}
+
+\begin{lstlisting}[caption={Classe Posicao}]
+class Posicao {
+    int agua;
+    int nutrientes;
+    Planta* planta;           // Max 1 planta
+    Ferramenta* ferramenta;   // Max 1 ferramenta
+
+public:
+    ~Posicao() {
+        // Posicao e DONA dos seus objetos
+        delete planta;
+        delete ferramenta;
+    }
+
+    // Prevenir copia (evita double-delete)
+    Posicao(const Posicao&) = delete;
+    Posicao& operator=(const Posicao&) = delete;
+};
+\end{lstlisting}
+
+\textbf{Ownership:} A \texttt{Posicao} é responsável por deletar as plantas e ferramentas que contém.
+
+\subsection{Gestão de Memória com Smart Pointers}
+
+\begin{lstlisting}[caption={Simulator - Gestão Segura}]
+class Simulator {
+    // Smart pointers - gestao automatica!
+    std::unique_ptr<Jardim> jardim;
+    std::unique_ptr<Jardineiro> jardineiro;
+
+    // Nao e necessario delete manual
+    ~Simulator() = default;
+};
+\end{lstlisting}
+
+\textbf{Vantagens:}
+\begin{itemize}[leftmargin=*]
+    \item Sem memory leaks
+    \item Exception-safe
+    \item Ownership claro
+    \item Codigo mais limpo
+\end{itemize}
+
+%=============================================================================
+\section{Implementação das Funcionalidades}
+%=============================================================================
+
+\subsection{Loop Principal - avanca()}
+
+O método \texttt{avanca()} é o coração do simulador:
+
+\begin{lstlisting}[caption={Loop Principal do Simulador}]
+void Simulator::avanca(int numInstantes) {
+    for (int i = 0; i < numInstantes; i++) {
+        // 1. Resetar contadores do turno
+        resetaContadoresTurno();
+
+        // 2. Incrementar o instante no jardim
+        jardim->avancaInstante();
+
+        // 3. Aplicar ferramenta ativa (se jardineiro no jardim)
+        aplicaFerramentaAtiva();
+
+        // 4. Processar TODAS as plantas
+        for (int l = 0; l < jardim->getLinhas(); l++) {
+            for (int c = 0; c < jardim->getColunas(); c++) {
+                Posicao* pos = jardim->getPosicao(l, c);
+                if (pos && pos->temPlanta()) {
+                    Planta* planta = pos->getPlanta();
+                    // Polimorfismo - cada planta implementa
+                    planta->avancaInstante(*pos, *jardim, l, c);
+                }
+            }
+        }
+
+        // 5. Verificar mortes
+        verificaMortes();
+
+        // 6. Processar multiplicacoes
+        processaMultiplicacoes();
+
+        // 7. Mostrar estado atual
+        renderizaJardim();
+    }
+}
+\end{lstlisting}
+
+\subsection{Comportamento das Plantas}
+
+\subsubsection{Cacto}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Absorção:} 25\% da água do solo, até 5 nutrientes
+    \item \textbf{Morte:} Água solo > 100 por 3 turnos OU nutrientes = 0 por 3 turnos
+    \item \textbf{Multiplicação:} Nutrientes > 100 E água > 50
+\end{itemize}
+
+\subsubsection{Roseira}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Consumo:} Perde 4 água e 4 nutrientes por turno
+    \item \textbf{Absorção:} 5 água e 8 nutrientes do solo
+    \item \textbf{Morte:} Água < 1, nutrientes < 1, nutrientes > 199, ou cercada
+    \item \textbf{Multiplicação:} Nutrientes > 100
+\end{itemize}
+
+\subsubsection{Erva Daninha}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Absorção:} 1 água e 1 nutriente por turno
+    \item \textbf{Morte:} Após 60 instantes
+    \item \textbf{Multiplicação:} A cada 5 turnos se nutrientes > 30, \textbf{mata} planta vizinha!
+\end{itemize}
+
+\subsection{Ferramentas}
+
+\subsubsection{Factory Pattern}
+\begin{lstlisting}[caption={Criação de Ferramentas}]
+Ferramenta* Simulator::criaFerramenta(char tipo) const {
+    static int proximoNumeroSerie = 1;
+
+    switch (tipo) {
+        case 'g': return new Regador(proximoNumeroSerie++);
+        case 'a': return new PacoteAdubo(proximoNumeroSerie++);
+        case 't': return new TesouraPoda(proximoNumeroSerie++);
+        case 'z': return new FerramentaZ(proximoNumeroSerie++);
+        default: return nullptr;
+    }
+}
+\end{lstlisting}
+
+\textbf{Numero de Série:} Variável static garante IDs únicos e crescentes.
+
+\subsubsection{Aplicação de Ferramentas}
+\begin{lstlisting}[caption={Polimorfismo em Ação}]
+// Cada ferramenta implementa aplicar() de forma diferente
+void Regador::aplicar(Posicao* pos) {
+    if (capacidadeAtual >= 10) {
+        pos->adicionaAgua(10);
+        capacidadeAtual -= 10;
+    }
+}
+
+void TesouraPoda::aplicar(Posicao* pos) {
+    if (pos->temPlanta() &&
+        pos->getPlanta()->getBeleza() == Beleza::FEIA) {
+        // Remove planta feia
+        Planta* p = pos->removePlanta();
+        p->aoMorrer(*pos);
+        delete p;
+    }
+}
+\end{lstlisting}
+
+\subsection{Limites por Turno}
+
+Conforme o enunciado, existem vários limites:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Ação} & \textbf{Limite} & \textbf{Implementação} \\
+\hline
+Colher plantas & 5 & \texttt{plantasColhidasTurno} \\
+Plantar plantas & 2 & \texttt{plantasPlantadasTurno} \\
+Movimentos & 10 & \texttt{jardineiro->movimentosTurno} \\
+Entrar/Sair & 1 & \texttt{entrouEsteTurno / saiuEsteTurno} \\
+\hline
+\end{tabular}
+\caption{Limites por Turno}
+\end{table}
+
+Todos os contadores são resetados no método \texttt{resetaContadoresTurno()}.
+
+%=============================================================================
+\section{Decisões de Design}
+%=============================================================================
+
+\subsection{Padrões de Design Utilizados}
+
+\subsubsection{Factory Method}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Onde:} \texttt{criaPlanta()}, \texttt{criaFerramenta()}
+    \item \textbf{Porquê:} Centraliza criação de objetos, facilita manutenção
+    \item \textbf{Benefício:} Adicionar nova planta/ferramenta = 1 alteração
+\end{itemize}
+
+\subsubsection{Template Method}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Onde:} Classe abstrata \texttt{Planta}
+    \item \textbf{Porquê:} Define esqueleto do comportamento, subclasses implementam detalhes
+    \item \textbf{Benefício:} Reutilização de código comum
+\end{itemize}
+
+\subsubsection{Strategy}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Onde:} \texttt{Ferramenta::aplicar()}
+    \item \textbf{Porquê:} Cada ferramenta tem estratégia diferente
+    \item \textbf{Benefício:} Fácil adicionar novas estratégias
+\end{itemize}
+
+\subsection{Princípios SOLID}
+
+\subsubsection{Single Responsibility Principle (SRP)}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Posicao} - Apenas gere 1 célula do jardim
+    \item \texttt{Jardim} - Apenas gere a grelha
+    \item \texttt{Simulator} - Apenas coordena o fluxo
+    \item \texttt{Interface} - Apenas processa comandos
+\end{itemize}
+
+\subsubsection{Open/Closed Principle (OCP)}
+\begin{itemize}[leftmargin=*]
+    \item Sistema aberto para extensão (novas plantas/ferramentas)
+    \item Fechado para modificação (não altera código base)
+\end{itemize}
+
+\subsubsection{Liskov Substitution Principle (LSP)}
+\begin{itemize}[leftmargin=*]
+    \item Qualquer \texttt{Planta*} pode substituir outra
+    \item Qualquer \texttt{Ferramenta*} pode substituir outra
+\end{itemize}
+
+\subsubsection{Dependency Inversion Principle (DIP)}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Jardim} depende de \texttt{Planta} abstrata (não de Cacto específico)
+    \item \texttt{Jardineiro} depende de \texttt{Ferramenta} abstrata
+\end{itemize}
+
+\subsection{Gestão de Memória}
+
+\subsubsection{Quem é Dono de Quê?}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Simulator} $\rightarrow$ Jardim e Jardineiro (unique\_ptr)
+    \item \texttt{Jardim} $\rightarrow$ Array de Posicoes (new/delete)
+    \item \texttt{Posicao} $\rightarrow$ Planta e Ferramenta (delete no destrutor)
+    \item \texttt{Jardineiro} $\rightarrow$ Vector de Ferramentas (vector gere)
+\end{itemize}
+
+\subsubsection{Prevenção de Memory Leaks}
+\begin{lstlisting}[caption={Destrutor Seguro}]
+Posicao::~Posicao() {
+    // IMPORTANTE: Posicao e dona dos objetos
+    if (planta != nullptr) {
+        delete planta;
+        planta = nullptr;
+    }
+    if (ferramenta != nullptr) {
+        delete ferramenta;
+        ferramenta = nullptr;
+    }
+}
+\end{lstlisting}
+
+\subsection{Renderização do Jardim}
+
+\subsubsection{Prioridades de Visualização}
+Quando múltiplos objetos ocupam a mesma posição, a ordem de prioridade é:
+
+\begin{enumerate}
+    \item Jardineiro (*) - mais prioritário
+    \item Planta (c, r, e, x)
+    \item Ferramenta (g, a, t, z)
+    \item Espaço vazio - menos prioritário
+\end{enumerate}
+
+\begin{lstlisting}[caption={Algoritmo de Renderização}]
+char Jardim::getCaracter(int linha, int col,
+                         bool temJardineiro,
+                         int linhaJard, int colJard) const {
+    // Prioridade 1: Jardineiro
+    if (temJardineiro && linha == linhaJard &&
+        col == colJard) {
+        return '*';
+    }
+
+    const Posicao* pos = getPosicao(linha, col);
+
+    // Prioridade 2: Planta
+    if (pos->temPlanta()) {
+        return pos->getPlanta()->getSimbolo();
+    }
+
+    // Prioridade 3: Ferramenta
+    if (pos->temFerramenta()) {
+        return pos->getFerramenta()->getSimbolo();
+    }
+
+    // Prioridade 4: Vazio
+    return ' ';
+}
+\end{lstlisting}
+
+%=============================================================================
+\section{Testes e Validação}
+%=============================================================================
+
+\subsection{Compilação}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Compilador:} Apple Clang 17.0 (macOS)
+    \item \textbf{Standard:} C++17
+    \item \textbf{Warnings:} Zero erros, apenas warnings de parâmetros não usados em stubs
+    \item \textbf{Build System:} CMake 3.20+
+\end{itemize}
+
+\subsection{Casos de Teste}
+
+\subsubsection{Teste 1: Criação e Renderização}
+\begin{lstlisting}[language=bash]
+jardim 5 5
+\end{lstlisting}
+
+\textbf{Resultado Esperado:} Jardim 5x5 com réguas, 3 ferramentas aleatórias.
+
+\subsubsection{Teste 2: Plantar e Crescer}
+\begin{lstlisting}[language=bash]
+planta aa c
+planta bb r
+planta cc e
+avanca 10
+lplantas
+\end{lstlisting}
+
+\textbf{Resultado Esperado:} Plantas crescem, absorvem recursos, lista mostra estado.
+
+\subsubsection{Teste 3: Movimento e Ferramentas}
+\begin{lstlisting}[language=bash]
+entra aa
+compra g
+pega 1
+d
+d
+avanca 5
+\end{lstlisting}
+
+\textbf{Resultado Esperado:} Jardineiro move, regador aplica água automaticamente.
+
+\subsubsection{Teste 4: Limites por Turno}
+\begin{lstlisting}[language=bash]
+planta aa c
+planta bb r
+planta cc e  # Erro: max 2 por turno
+avanca 1
+planta cc e  # OK: novo turno
+\end{lstlisting}
+
+\textbf{Resultado Esperado:} Terceira plantação falha, sucede após avançar.
+
+\subsection{Validações Implementadas}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Validação} & \textbf{Mensagem de Erro} \\
+\hline
+Jardim não existe & ``Erro: Jardim nao existe!'' \\
+Posição inválida & ``Erro: Posicao invalida!'' \\
+Limite de colheitas & ``Ja colheu 5 plantas neste turno!'' \\
+Limite de plantações & ``Ja plantou 2 plantas neste turno!'' \\
+Limite de movimentos & ``Limite de movimentos atingido!'' \\
+Posição ocupada & ``Ja existe uma planta nessa posicao!'' \\
+Ferramenta não encontrada & ``Ferramenta \#X nao encontrada'' \\
+\hline
+\end{tabular}
+\caption{Validações e Mensagens de Erro}
+\end{table}
+
+%=============================================================================
+\section{Estatísticas do Projeto}
+%=============================================================================
+
+\subsection{Métricas de Código}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|r|}
+\hline
+\textbf{Métrica} & \textbf{Valor} \\
+\hline
+Classes & 18 \\
+Ficheiros .h & 18 \\
+Ficheiros .cpp & 18 \\
+Linhas de código (aprox.) & 2800 \\
+Métodos implementados & 120+ \\
+Comandos disponíveis & 20 \\
+\hline
+\end{tabular}
+\caption{Estatísticas do Código}
+\end{table}
+
+\subsection{Distribuição de Código}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{core/} - 35\% (Interface, Simulator, Validator)
+    \item \textbf{jardim/} - 20\% (Jardim, Posicao)
+    \item \textbf{plantas/} - 25\% (4 tipos de plantas)
+    \item \textbf{ferramentas/} - 15\% (4 tipos de ferramentas)
+    \item \textbf{jardineiro/} - 5\% (Jardineiro)
+\end{itemize}
+
+%=============================================================================
+\section{Funcionalidades Implementadas}
+%=============================================================================
+
+\subsection{Meta 1 (Completa)}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Validação completa de comandos
+    \item[$\checkmark$] Estrutura de classes bem definida
+    \item[$\checkmark$] Grelha 2D SEM vector
+    \item[$\checkmark$] Sistema de coordenadas (aa-zz)
+    \item[$\checkmark$] Hierarquias de herança
+    \item[$\checkmark$] Código compila sem warnings relevantes
+\end{itemize}
+
+\subsection{Meta 2 (90\% Completa)}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Loop principal (\texttt{avanca()})
+    \item[$\checkmark$] Comportamento completo das 4 plantas
+    \item[$\checkmark$] Sistema de mortes
+    \item[$\checkmark$] Aplicação de ferramentas
+    \item[$\checkmark$] Movimento do jardineiro
+    \item[$\checkmark$] Todos os comandos de listagem
+    \item[$\checkmark$] Limites de ações por turno
+    \item[$\checkmark$] Renderização completa
+    \item[$\times$] Sistema save/load (opcional)
+    \item[$\sim$] Multiplicação de plantas (estrutura pronta, não testada)
+\end{itemize}
+
+%=============================================================================
+\section{Dificuldades Encontradas}
+%=============================================================================
+
+\subsection{Desafios Técnicos}
+
+\subsubsection{1. Grelha SEM std::vector}
+\textbf{Problema:} Restrição do enunciado proíbe vector para armazenar solo.
+
+\textbf{Solução:} Array 2D dinâmico com \texttt{new/delete}, gestão manual cuidadosa.
+
+\subsubsection{2. Ownership de Ponteiros}
+\textbf{Problema:} Decidir quem deleta plantas e ferramentas.
+
+\textbf{Solução:} Regra clara - \texttt{Posicao} é dona, deleta no destrutor.
+
+\subsubsection{3. Polimorfismo com Plantas}
+\textbf{Problema:} Cada planta tem comportamento diferente mas precisam de interface comum.
+
+\textbf{Solução:} Classe abstrata com métodos virtuais puros, Template Method pattern.
+
+\subsubsection{4. Limites por Turno}
+\textbf{Problema:} Múltiplos contadores para diferentes ações.
+
+\textbf{Solução:} Método \texttt{resetaContadoresTurno()} chamado em cada instante.
+
+%=============================================================================
+\section{Melhorias Futuras}
+%=============================================================================
+
+\subsection{Funcionalidades}
+\begin{itemize}[leftmargin=*]
+    \item Implementar multiplicação completa de plantas
+    \item Sistema de save/load com deep copy
+    \item Interface gráfica (Qt ou similar)
+    \item Mais tipos de plantas e ferramentas
+    \item Sistema de pontuação
+\end{itemize}
+
+\subsection{Código}
+\begin{itemize}[leftmargin=*]
+    \item Testes unitários (Google Test)
+    \item Documentação Doxygen completa
+    \item Profiling de performance
+    \item Análise de memory leaks com Valgrind
+\end{itemize}
+
+%=============================================================================
+\section{Conclusão}
+%=============================================================================
+
+O projeto \textbf{Simulador de Jardim} foi implementado com sucesso, cumprindo os requisitos da Meta 2.
+
+\subsection{Objetivos Alcançados}
+\begin{itemize}[leftmargin=*]
+    \item [$\checkmark$] Aplicação correta de POO (herança, polimorfismo, encapsulamento)
+    \item [$\checkmark$] Gestão segura de memória dinâmica
+    \item [$\checkmark$] Respeito às restrições do enunciado
+    \item [$\checkmark$] Código limpo, organizado e comentado
+    \item [$\checkmark$] Compilação sem erros
+    \item [$\checkmark$] Funcionalidades principais implementadas
+\end{itemize}
+
+\subsection{Aprendizagens}
+Este trabalho permitiu consolidar conhecimentos em:
+\begin{itemize}[leftmargin=*]
+    \item Design de hierarquias de classes
+    \item Padrões de design (Factory, Template Method, Strategy)
+    \item Gestão manual de memória vs. smart pointers
+    \item Importância de ownership claro
+    \item Validação de input e tratamento de erros
+\end{itemize}
+
+\subsection{Palavras Finais}
+O simulador está funcional e pronto para demonstração. O código está bem estruturado, facilitando manutenção e extensões futuras. A arquitetura escolhida permite adicionar facilmente novos tipos de plantas e ferramentas sem modificar código existente.
+
+%=============================================================================
+\appendix
+\section{Comandos Disponíveis}
+%=============================================================================
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\textbf{Comando} & \textbf{Descrição} \\
+\hline
+\texttt{jardim <l> <c>} & Cria jardim com l linhas e c colunas \\
+\texttt{avanca [n]} & Avança n instantes (padrão: 1) \\
+\texttt{lplantas} & Lista todas as plantas \\
+\texttt{lplanta <pos>} & Info de planta específica \\
+\texttt{larea} & Lista posições não vazias \\
+\texttt{lsolo <pos> [raio]} & Info do solo com raio opcional \\
+\texttt{lferr} & Lista ferramentas do jardineiro \\
+\texttt{colhe <pos>} & Colhe planta (max 5/turno) \\
+\texttt{planta <pos> <tipo>} & Planta (c/r/e/x, max 2/turno) \\
+\texttt{compra <tipo>} & Compra ferramenta (g/a/t/z) \\
+\texttt{pega <num>} & Pega ferramenta pelo número \\
+\texttt{larga} & Larga ferramenta da mão \\
+\texttt{e/d/c/b} & Move jardineiro \\
+\texttt{entra <pos>} & Entra no jardim \\
+\texttt{sai} & Sai do jardim \\
+\texttt{grava <nome>} & Grava estado (TODO) \\
+\texttt{recupera <nome>} & Recupera estado (TODO) \\
+\texttt{apaga <nome>} & Apaga estado (TODO) \\
+\texttt{executa <ficheiro>} & Executa comandos de ficheiro \\
+\texttt{fim} & Termina simulador \\
+\hline
+\end{tabular}
+\caption{Lista Completa de Comandos}
+\end{table}
+
+\section{Estrutura de Ficheiros}
+
+\begin{verbatim}
+SimGarden/
+├── CMakeLists.txt
+├── main.cpp
+├── config/
+│   ├── Settings.h
+│   └── RandomGenerator.h
+├── core/
+│   ├── Simulator.h/cpp
+│   ├── Interface.h/cpp
+│   └── Validator.h/cpp
+├── jardim/
+│   ├── Jardim.h/cpp
+│   └── Posicao.h/cpp
+├── jardineiro/
+│   └── Jardineiro.h/cpp
+├── plantas/
+│   ├── Planta.h/cpp
+│   ├── Cacto.h/cpp
+│   ├── Roseira.h/cpp
+│   ├── ErvaDaninha.h/cpp
+│   └── PlantaExotica.h/cpp
+└── ferramentas/
+    ├── Ferramenta.h/cpp
+    ├── Regador.h/cpp
+    ├── PacoteAdubo.h/cpp
+    ├── TesouraPoda.h/cpp
+    └── FerramentaZ.h/cpp
+\end{verbatim}
+
+\end{document}

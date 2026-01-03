@@ -1,42 +1,72 @@
 //
 // Created by Celso Jordão on 01/11/2025.
 //
+// CACTO.CPP - Implementação da planta Cacto
+//
+// DEMONSTRA POLIMORFISMO:
+// - Implementa métodos virtuais puros da classe base Planta
+// - Comportamento DIFERENTE de Roseira e ErvaDaninha
+// - Chamado via ponteiro base (Planta*) no Simulator
 
 #include "Cacto.h"
 #include "../jardim/Jardim.h"
 #include "../config/Settings.h"
 #include "../config/RandomGenerator.h"
 
+/**
+ * @brief Construtor - inicializa como planta NEUTRA
+ */
 Cacto::Cacto() : Planta(Beleza::NEUTRA) {
 }
 
+/**
+ * @brief IMPLEMENTAÇÃO ESPECÍFICA do comportamento do Cacto
+ *
+ * ALGORITMO:
+ * 1. Incrementa idade
+ * 2. Absorve recursos (POUCA água - 25%, ALGUNS nutrientes - 5)
+ * 3. Verifica condições de morte:
+ *    - Muita água (> 100) = morre afogado
+ *    - Poucos nutrientes (< 1) = morre de fome
+ * 4. Tenta multiplicar se bem nutrido (nutrientes > 100 E água > 50)
+ *
+ * POLIMORFISMO EM AÇÃO:
+ * - Roseira absorve MÉDIA água e multiplica por água
+ * - Cacto absorve POUCA água e multiplica por nutrientes
+ * - MESMA interface (avancaInstante), LÓGICA diferente!
+ */
 void Cacto::avancaInstante(Posicao& pos, Jardim& jardim, int linha, int col) {
     instantesVida++;
 
-    // Absorver água (25% da água do solo)
+    // === FASE 1: ABSORÇÃO ===
+    // Cacto absorve POUCA água (é resistente à seca)
     int aguaSolo = pos.getAgua();
     int aguaAbsorver = (aguaSolo * Settings::Cacto::absorcao_agua_percentagem) / 100;
 
-    // Absorver nutrientes (5 unidades)
+    // Absorve nutrientes fixos
     int nutrientesAbsorver = Settings::Cacto::absorcao_nutrientes;
 
     absorveDoSolo(pos, aguaAbsorver, nutrientesAbsorver);
 
-    // Verificar condições de morte
+    // === FASE 2: VERIFICAÇÃO DE MORTE ===
     int aguaSoloAtual = pos.getAgua();
     int nutrientesSoloAtual = pos.getNutrientes();
 
-    // Condição 1: Água do solo > 100 por 3 instantes
+    // Condição 1: EXCESSO de água (cacto não gosta de muita água!)
     if (aguaSoloAtual > Settings::Cacto::morre_agua_solo_maior) {
         contadorCondicaoMorte++;
-    } else if (nutrientesSoloAtual < Settings::Cacto::morre_nutrientes_solo_menor) {
-        // Condição 2: Nutrientes do solo < 1 por 3 instantes
+    }
+    // Condição 2: FALTA de nutrientes
+    else if (nutrientesSoloAtual < Settings::Cacto::morre_nutrientes_solo_menor) {
         contadorCondicaoMorte++;
-    } else {
-        contadorCondicaoMorte = 0;  // Reset contador
+    }
+    // Condições OK - reseta contador
+    else {
+        contadorCondicaoMorte = 0;
     }
 
-    // Tentativa de multiplicação (se nutrientes > 100 e água > 50 no solo)
+    // === FASE 3: MULTIPLICAÇÃO ===
+    // Cacto multiplica quando tem MUITOS nutrientes
     if (nutrientesSoloAtual > Settings::Cacto::multiplica_nutrientes_maior &&
         aguaSoloAtual > Settings::Cacto::multiplica_agua_maior) {
         // Tentar multiplicar para vizinho aleatório

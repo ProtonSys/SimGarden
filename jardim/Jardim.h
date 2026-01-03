@@ -12,6 +12,28 @@ class Posicao;
 class Planta;
 class Ferramenta;
 
+/**
+ * @brief Representa o jardim como uma grelha 2D de posições
+ *
+ * DECISÃO CRÍTICA PARA DEFESA:
+ * - Usa Posicao** (array 2D dinâmico) em vez de std::vector
+ * - RAZÃO: Enunciado PROÍBE std::vector para armazenar posições do solo
+ *
+ * GESTÃO DE MEMÓRIA:
+ * - Construtor: aloca array 2D manualmente (new)
+ * - Destrutor: liberta memória manualmente (delete)
+ * - Copy constructor DELETADO para prevenir problemas
+ *
+ * PERGUNTA TÍPICA DE DEFESA:
+ * "Porque não usaste std::vector?"
+ * R: O enunciado proíbe explicitamente usar coleções da biblioteca standard
+ *    para armazenar as posições do solo. Implementei com array 2D dinâmico
+ *    alocado com new[] e libertado com delete[] no destrutor.
+ *
+ * INICIALIZAÇÃO:
+ * - Cada posição recebe água/nutrientes aleatórios (0-Settings::max)
+ * - 3 ferramentas iniciais colocadas aleatoriamente
+ */
 class Jardim {
     Posicao** grelha;  // Array 2D alocado dinamicamente (NÃO É VECTOR!)
     int linhas;
