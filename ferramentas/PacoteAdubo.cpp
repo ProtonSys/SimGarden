@@ -3,6 +3,7 @@
 //
 
 #include "PacoteAdubo.h"
+#include "../jardim/Posicao.h"
 #include "../config/Settings.h"
 
 PacoteAdubo::PacoteAdubo(int numeroSerie)
@@ -12,6 +13,16 @@ PacoteAdubo::PacoteAdubo(int numeroSerie)
 void PacoteAdubo::usar() {
     if (capacidadeAtual >= Settings::Adubo::dose) {
         capacidadeAtual -= Settings::Adubo::dose;
-        // Actual nutrient application happens in Jardineiro/Simulator
+    }
+}
+
+void PacoteAdubo::aplicar(Posicao* pos) {
+    if (pos == nullptr || estaGasta()) {
+        return;
+    }
+
+    if (capacidadeAtual >= Settings::Adubo::dose) {
+        pos->adicionaNutrientes(Settings::Adubo::dose);
+        capacidadeAtual -= Settings::Adubo::dose;
     }
 }

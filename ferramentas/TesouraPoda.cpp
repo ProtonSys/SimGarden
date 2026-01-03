@@ -3,6 +3,8 @@
 //
 
 #include "TesouraPoda.h"
+#include "../jardim/Posicao.h"
+#include "../plantas/Planta.h"
 
 TesouraPoda::TesouraPoda(int numeroSerie)
     : Ferramenta(numeroSerie, "Tesoura de Poda", 9999) {
@@ -11,5 +13,24 @@ TesouraPoda::TesouraPoda(int numeroSerie)
 
 void TesouraPoda::usar() {
     // Does not consume capacity
-    // Removal of ugly plants happens in Jardineiro/Simulator
+}
+
+void TesouraPoda::aplicar(Posicao* pos) {
+    if (pos == nullptr) {
+        return;
+    }
+
+    // Remove plantas feias (ugly plants)
+    if (pos->temPlanta()) {
+        Planta* planta = pos->getPlanta();
+        if (planta != nullptr && planta->getBeleza() == Beleza::FEIA) {
+            // Planta feia! Cortar!
+            Planta* p = pos->removePlanta();
+            if (p != nullptr) {
+                // Ao morrer, a planta pode deixar nutrientes no solo
+                p->aoMorrer(*pos);
+                delete p;
+            }
+        }
+    }
 }

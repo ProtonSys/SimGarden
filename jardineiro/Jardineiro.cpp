@@ -2,16 +2,12 @@
 // Created by Celso Jordão on 01/11/2025.
 //
 
-//
-// Created by Celso Jordão on 01/11/2025.
-//
-
 #include "Jardineiro.h"
-#include "Ferramenta.h"
-#include "Settings.h"
+#include "../ferramentas/Ferramenta.h"
+#include "../config/Settings.h"
 
 #include <iostream>
-#include <algorithm> // std::find_if
+#include <algorithm>
 
 Jardineiro::Jardineiro()
     : noJardim(false),
@@ -126,13 +122,33 @@ bool Jardineiro::pegaFerramenta(int numSerie) {
     return true;
 }
 
+// largaFerramenta: deixa de ter ferramenta na mão
+bool Jardineiro::largaFerramenta() {
+    if (ferramentaNaMao == nullptr) {
+        return false;
+    }
+
+    std::cout << "[Jardineiro] largou ferramenta #"
+              << ferramentaNaMao->getNumeroSerie() << std::endl;
+    ferramentaNaMao = nullptr;
+    return true;
+}
+
 // Remove do inventário ferramentas que já ficaram gastas
-// (por ex. capacidade 0). Isto depende da interface de Ferramenta.
-// Vamos deixar em branco para já, mas com mensagem de debug.
 void Jardineiro::removeFerramentaGasta() {
-    // TODO: verificar estado de cada ferramenta e apagar as vazias/gastas
-    // Neste momento só mostramos informação.
-    std::cout << "[DEBUG] removeFerramentaGasta() ainda nao implementado\n";
+    if (ferramentaNaMao == nullptr) {
+        return;
+    }
+
+    if (ferramentaNaMao->estaGasta()) {
+        // Encontrar e remover do vector
+        auto it = std::find(ferramentas.begin(), ferramentas.end(), ferramentaNaMao);
+        if (it != ferramentas.end()) {
+            delete *it;
+            ferramentas.erase(it);
+        }
+        ferramentaNaMao = nullptr;
+    }
 }
 
 // Lista todo o inventário do jardineiro

@@ -19,6 +19,8 @@ public:
     PacoteAdubo(int numeroSerie);
 
     void usar() override;
+    char getSimbolo() const override { return 'a'; }
+    void aplicar(class Posicao* pos) override;
 };
 
 #endif //SIMGARDEN_PACOTEADUBO_H

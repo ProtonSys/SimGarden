@@ -19,6 +19,8 @@ public:
     TesouraPoda(int numeroSerie);
 
     void usar() override;
+    char getSimbolo() const override { return 't'; }
+    void aplicar(class Posicao* pos) override;
 };
 
 #endif //SIMGARDEN_TESOURAPODA_H

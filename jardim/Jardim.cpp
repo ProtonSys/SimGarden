@@ -4,6 +4,9 @@
 
 #include "Jardim.h"
 #include "Posicao.h"
+#include "../plantas/Planta.h"
+#include "../ferramentas/Ferramenta.h"
+#include "../jardineiro/Jardineiro.h"
 #include "../config/Settings.h"
 #include "../config/RandomGenerator.h"
 
@@ -45,7 +48,7 @@ Jardim::~Jardim() {
     }
 }
 
-void Jardim::renderiza() const {
+void Jardim::renderiza(bool temJardineiro, int linhaJard, int colJard) const {
     std::cout << "\n";
 
     // Régua superior
@@ -60,7 +63,8 @@ void Jardim::renderiza() const {
         std::cout << (char)('A' + i);
 
         for (int j = 0; j < colunas; j++) {
-            std::cout << ' ';  // Por agora só espaços
+            char c = getCaracter(i, j, temJardineiro, linhaJard, colJard);
+            std::cout << c;
         }
 
         std::cout << (char)('A' + i) << std::endl;
@@ -89,11 +93,12 @@ bool Jardim::temVizinhoVazio(int linha, int col, int& linhaViz, int& colViz) con
         int novaCol = col + dir[1];
 
         if (posicaoValida(novaLinha, novaCol)) {
-            // TODO: Check if position is actually empty (no plant)
-            // For now, just return first valid neighbor
-            linhaViz = novaLinha;
-            colViz = novaCol;
-            return true;
+            // Check if position actually has no plant
+            if (!grelha[novaLinha][novaCol].temPlanta()) {
+                linhaViz = novaLinha;
+                colViz = novaCol;
+                return true;
+            }
         }
     }
     return false;
@@ -124,4 +129,115 @@ bool Jardim::temVizinhoAleatorio(int linha, int col, int& linhaViz, int& colViz)
     linhaViz = vizinhosValidos[idx].first;
     colViz = vizinhosValidos[idx].second;
     return true;
+}
+
+// Acesso a posições
+Posicao* Jardim::getPosicao(int linha, int col) {
+    if (!posicaoValida(linha, col)) {
+        return nullptr;
+    }
+    return &grelha[linha][col];
+}
+
+const Posicao* Jardim::getPosicao(int linha, int col) const {
+    if (!posicaoValida(linha, col)) {
+        return nullptr;
+    }
+    return &grelha[linha][col];
+}
+
+// Avançar instante
+void Jardim::avancaInstante() {
+    instanteAtual++;
+}
+
+// Adicionar/remover plantas
+bool Jardim::adicionaPlanta(int linha, int col, Planta* planta) {
+    if (!posicaoValida(linha, col)) {
+        return false;
+    }
+
+    if (grelha[linha][col].temPlanta()) {
+        return false;  // Já existe uma planta
+    }
+
+    grelha[linha][col].setPlanta(planta);
+    return true;
+}
+
+bool Jardim::removePlanta(int linha, int col) {
+    if (!posicaoValida(linha, col)) {
+        return false;
+    }
+
+    if (!grelha[linha][col].temPlanta()) {
+        return false;  // Não há planta para remover
+    }
+
+    Planta* p = grelha[linha][col].removePlanta();
+    delete p;  // Deletar a planta
+    return true;
+}
+
+// Adicionar/remover ferramentas
+bool Jardim::adicionaFerramenta(int linha, int col, Ferramenta* ferr) {
+    if (!posicaoValida(linha, col)) {
+        delete ferr;  // Evitar memory leak
+        return false;
+    }
+
+    if (grelha[linha][col].temFerramenta()) {
+        delete ferr;  // Já existe uma ferramenta, deletar a nova
+        return false;
+    }
+
+    grelha[linha][col].setFerramenta(ferr);
+    return true;
+}
+
+bool Jardim::removeFerramenta(int linha, int col) {
+    if (!posicaoValida(linha, col)) {
+        return false;
+    }
+
+    if (!grelha[linha][col].temFerramenta()) {
+        return false;  // Não há ferramenta para remover
+    }
+
+    Ferramenta* f = grelha[linha][col].removeFerramenta();
+    delete f;  // Deletar a ferramenta
+    return true;
+}
+
+// Iteração para comandos de listagem
+void Jardim::percorrePosicoes(void (*funcao)(const Posicao*, int, int, void*), void* dados) const {
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
+            funcao(&grelha[i][j], i, j, dados);
+        }
+    }
+}
+
+// Helper para renderização - obter o caracter a mostrar numa posição
+char Jardim::getCaracter(int linha, int col, bool temJardineiro,
+                         int linhaJard, int colJard) const {
+    // Prioridade: Jardineiro > Planta > Ferramenta > Vazio
+    if (temJardineiro && linha == linhaJard && col == colJard) {
+        return '*';
+    }
+
+    const Posicao* pos = getPosicao(linha, col);
+    if (pos == nullptr) {
+        return ' ';
+    }
+
+    if (pos->temPlanta()) {
+        return pos->getPlanta()->getSimbolo();
+    }
+
+    if (pos->temFerramenta()) {
+        return pos->getFerramenta()->getSimbolo();
+    }
+
+    return ' ';
 }

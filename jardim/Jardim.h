@@ -8,36 +8,9 @@
 #include "Posicao.h"
 #include <iostream>
 
-#ifndef POSICAO_H
-#define POSICAO_H
-
-class Posicao {
-private:
-    int agua;
-    int nutrientes;
-
-public:
-    Posicao()
-        : agua(0), nutrientes(0) {}
-
-    void setAgua(int a) {
-        agua = a;
-    }
-
-    void setNutrientes(int n) {
-        nutrientes = n;
-    }
-
-    int getAgua() const {
-        return agua;
-    }
-
-    int getNutrientes() const {
-        return nutrientes;
-    }
-};
-
-#endif // POSICAO_H
+class Posicao;
+class Planta;
+class Ferramenta;
 
 class Jardim {
     Posicao** grelha;  // Array 2D alocado dinamicamente (NÃO É VECTOR!)
@@ -69,7 +42,7 @@ public:
     void avancaInstante();
 
     // Renderização
-    void renderiza() const;
+    void renderiza(bool temJardineiro = false, int linhaJard = -1, int colJard = -1) const;
 
     // Adicionar/remover elementos
     bool adicionaPlanta(int linha, int col, class Planta* planta);

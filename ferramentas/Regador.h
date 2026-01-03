@@ -19,6 +19,8 @@ public:
     Regador(int numeroSerie);
 
     void usar() override;
+    char getSimbolo() const override { return 'g'; }
+    void aplicar(class Posicao* pos) override;
 };
 
 #endif //SIMGARDEN_REGADOR_H

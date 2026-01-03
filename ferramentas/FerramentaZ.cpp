@@ -3,6 +3,7 @@
 //
 
 #include "FerramentaZ.h"
+#include "../jardim/Posicao.h"
 
 FerramentaZ::FerramentaZ(int numeroSerie)
     : Ferramenta(numeroSerie, "Super Fertilizador", 5) {
@@ -12,7 +13,16 @@ FerramentaZ::FerramentaZ(int numeroSerie)
 void FerramentaZ::usar() {
     if (capacidadeAtual > 0) {
         capacidadeAtual--;
-        // Super fertilization effect happens in Jardineiro/Simulator
-        // Affects 3x3 area around current position
     }
+}
+
+void FerramentaZ::aplicar(Posicao* pos) {
+    if (pos == nullptr || estaGasta()) {
+        return;
+    }
+
+    // Super fertilizador - aumenta dramaticamente água e nutrientes
+    pos->adicionaAgua(50);
+    pos->adicionaNutrientes(30);
+    capacidadeAtual--;
 }

@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/core -I/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/config -I/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/jardim -I/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/jardineiro -I/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/plantas -I/Users/celsojordao/ISEC/CLionProjects/POO_TP/SimGarden/ferramentas
+CXX_INCLUDES = -I/Users/celsojordao/Desktop/ISEC/Projects/POO/SimGarden/core -I/Users/celsojordao/Desktop/ISEC/Projects/POO/SimGarden/config -I/Users/celsojordao/Desktop/ISEC/Projects/POO/SimGarden/jardim -I/Users/celsojordao/Desktop/ISEC/Projects/POO/SimGarden/jardineiro -I/Users/celsojordao/Desktop/ISEC/Projects/POO/SimGarden/plantas -I/Users/celsojordao/Desktop/ISEC/Projects/POO/SimGarden/ferramentas
 
 CXX_FLAGSarm64 = -g -std=gnu++17 -arch arm64 -Wall -Wextra -pedantic
 

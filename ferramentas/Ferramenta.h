@@ -50,6 +50,12 @@ public:
         if (capacidadeAtual > 0)
             capacidadeAtual--;
     }
+
+    // Símbolo para visualização no jardim (deve ser implementado pelas derivadas)
+    virtual char getSimbolo() const = 0;
+
+    // Aplicar ferramenta numa posição (deve ser implementado pelas derivadas)
+    virtual void aplicar(class Posicao* pos) = 0;
 };
 
 #endif // FERRAMENTA_H

@@ -19,6 +19,8 @@ public:
     FerramentaZ(int numeroSerie);
 
     void usar() override;
+    char getSimbolo() const override { return 'z'; }
+    void aplicar(class Posicao* pos) override;
 };
 
 #endif //SIMGARDEN_FERRAMENTAZ_H

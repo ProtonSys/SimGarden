@@ -2,64 +2,71 @@
 // Created by Celso Jordão on 01/11/2025.
 //
 
-#ifndef JARDIM_H
-#define JARDIM_H
+#ifndef POSICAO_H
+#define POSICAO_H
 
-#include "Posicao.h"
-#include <iostream>
+class Planta;
+class Ferramenta;
 
-class Posicao;
+/**
+ * @brief Representa UMA célula/posição do jardim
+ *
+ * RESPONSABILIDADES:
+ * - Armazena recursos do solo (água e nutrientes)
+ * - Guarda NO MÁXIMO 1 planta E 1 ferramenta
+ * - Gere ownership: ao destruir, deleta planta e ferramenta
+ *
+ * DECISÃO DE DESIGN:
+ * - Posicao é DONA dos seus objetos (delete no destrutor)
+ * - Previne cópia (copy constructor = delete) para evitar problemas
+ * - Os valores de água/nutrientes nunca ficam negativos
+ */
+class Posicao {
+private:
+    // === RECURSOS DO SOLO ===
+    int agua;              // Quantidade de água nesta posição
+    int nutrientes;        // Quantidade de nutrientes nesta posição
 
-class Jardim {
-    Posicao** grelha;  // Array 2D alocado dinamicamente (NÃO É VECTOR!)
-    int linhas;
-    int colunas;
-    int instanteAtual;
+    // === CONTEÚDO DA POSIÇÃO ===
+    Planta* planta;        // Ponteiro para planta (nullptr se vazia)
+    Ferramenta* ferramenta;// Ponteiro para ferramenta (nullptr se vazia)
 
 public:
-    Jardim(int l, int c);
-    ~Jardim();
+    Posicao();
+    ~Posicao();
 
-    // Prevenir cópia (para segurança)
-    Jardim(const Jardim&) = delete;
-    Jardim& operator=(const Jardim&) = delete;
+    // Prevenir cópia para evitar problemas com ponteiros
+    Posicao(const Posicao&) = delete;
+    Posicao& operator=(const Posicao&) = delete;
 
-    // Getters
-    int getLinhas() const { return linhas; }
-    int getColunas() const { return colunas; }
-    int getInstante() const { return instanteAtual; }
+    // Getters e Setters para água e nutrientes
+    void setAgua(int a);
+    void setNutrientes(int n);
+    int getAgua() const;
+    int getNutrientes() const;
 
-    // Acesso a posições
-    Posicao* getPosicao(int linha, int col);
-    const Posicao* getPosicao(int linha, int col) const;
+    // Adicionar/modificar água e nutrientes
+    void adicionaAgua(int quantidade);
+    void adicionaNutrientes(int quantidade);
+    void removeAgua(int quantidade);
+    void removeNutrientes(int quantidade);
 
-    // Validação
-    bool posicaoValida(int linha, int col) const;
+    // Gestão de plantas
+    bool temPlanta() const;
+    Planta* getPlanta();
+    const Planta* getPlanta() const;
+    void setPlanta(Planta* p);
+    Planta* removePlanta();  // Remove e retorna a planta
 
-    // Avançar tempo
-    void avancaInstante();
+    // Gestão de ferramentas
+    bool temFerramenta() const;
+    Ferramenta* getFerramenta();
+    const Ferramenta* getFerramenta() const;
+    void setFerramenta(Ferramenta* f);
+    Ferramenta* removeFerramenta();  // Remove e retorna a ferramenta
 
-    // Renderização
-    void renderiza() const;
-
-    // Adicionar/remover elementos
-    bool adicionaPlanta(int linha, int col, class Planta* planta);
-    bool removePlanta(int linha, int col);
-    bool adicionaFerramenta(int linha, int col, class Ferramenta* ferr);
-    bool removeFerramenta(int linha, int col);
-
-    // Iteração para comandos de listagem
-    void percorrePosicoes(void (*funcao)(const Posicao*, int, int, void*), void* dados) const;
-
-    // Para multiplicação de plantas - encontrar posição vizinha vazia
-    bool temVizinhoVazio(int linha, int col, int& linhaViz, int& colViz) const;
-    bool temVizinhoAleatorio(int linha, int col, int& linhaViz, int& colViz) const;
-
-private:
-    void inicializaGrelha();
-    void libertaGrelha();
-    char getCaracter(int linha, int col, bool temJardineiro,
-                     int linhaJard, int colJard) const;
+    // Verificar se está vazia (sem planta e sem ferramenta)
+    bool estaVazia() const;
 };
 
-#endif
+#endif // POSICAO_H

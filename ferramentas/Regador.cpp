@@ -3,6 +3,7 @@
 //
 
 #include "Regador.h"
+#include "../jardim/Posicao.h"
 #include "../config/Settings.h"
 
 Regador::Regador(int numeroSerie)
@@ -12,6 +13,16 @@ Regador::Regador(int numeroSerie)
 void Regador::usar() {
     if (capacidadeAtual >= Settings::Regador::dose) {
         capacidadeAtual -= Settings::Regador::dose;
-        // Actual water application happens in Jardineiro/Simulator
+    }
+}
+
+void Regador::aplicar(Posicao* pos) {
+    if (pos == nullptr || estaGasta()) {
+        return;
+    }
+
+    if (capacidadeAtual >= Settings::Regador::dose) {
+        pos->adicionaAgua(Settings::Regador::dose);
+        capacidadeAtual -= Settings::Regador::dose;
     }
 }

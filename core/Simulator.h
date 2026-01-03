@@ -14,21 +14,33 @@
 class Jardim;
 class Jardineiro;
 
+/**
+ * @brief Classe principal do simulador - coordena toda a lógica do jogo
+ *
+ * O Simulator é o "controlador" central que:
+ * - Gere o jardim (grelha 2D) e o jardineiro
+ * - Processa a passagem do tempo (avança instantes)
+ * - Aplica regras de negócio (limites por turno)
+ * - Coordena interação entre plantas, ferramentas e jardineiro
+ *
+ * DESIGN: Usa smart pointers (unique_ptr) para gestão automática de memória
+ */
 class Simulator {
-    std::unique_ptr<Jardim> jardim;
-    std::unique_ptr<Jardineiro> jardineiro;
+    // === ESTADO PRINCIPAL ===
+    std::unique_ptr<Jardim> jardim;           // Grelha do jardim (ownership exclusivo)
+    std::unique_ptr<Jardineiro> jardineiro;   // Personagem controlada pelo utilizador
 
-    // Para gravação/recuperação de estados
+    // === SISTEMA DE SAVE/LOAD (Meta 2 opcional) ===
     std::map<std::string, std::unique_ptr<Jardim>> estadosGravados;
     std::map<std::string, std::unique_ptr<Jardineiro>> jardineirosGravados;
 
-    // Contadores de ações por turno
-    int plantasColhidasTurno;
-    int plantasPlantadasTurno;
+    // === LIMITES POR TURNO (conforme enunciado) ===
+    int plantasColhidasTurno;    // Max 5 por turno (Settings::Jardineiro::max_colheitas)
+    int plantasPlantadasTurno;   // Max 2 por turno (Settings::Jardineiro::max_plantacoes)
 
-    // Estado do último turno para entrada/saída
-    bool entrouEsteTurno;
-    bool saiuEsteTurno;
+    // === CONTROLE DE ENTRADA/SAÍDA ===
+    bool entrouEsteTurno;        // Max 1 entrada por turno
+    bool saiuEsteTurno;          // Max 1 saída por turno
 
 public:
     Simulator();
