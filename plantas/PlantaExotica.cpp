@@ -57,8 +57,7 @@ void PlantaExotica::avancaInstante(Posicao& pos, Jardim& jardim, int linha, int 
     if (nutrientesAcumulados > 80 && RandomGenerator::getBool(0.05)) {
         int linhaViz, colViz;
         if (jardim.temVizinhoVazio(linha, col, linhaViz, colViz)) {
-            // TODO: Add multiplication logic
-            // jardim.adicionaPlanta(linhaViz, colViz, new PlantaExotica());
+            jardim.adicionaPlanta(linhaViz, colViz, new PlantaExotica());
         }
     }
 }

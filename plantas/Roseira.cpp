@@ -29,11 +29,15 @@ void Roseira::avancaInstante(Posicao& pos, Jardim& jardim, int linha, int col) {
         if (jardim.temVizinhoVazio(linha, col, linhaViz, colViz)) {
             // Nova planta fica com 25 nutrientes e 50% da água da mãe
             // Planta original fica com 100 nutrientes e 50% da água
-            // TODO: Implementar criação de nova planta
-            // int aguaNova = (aguaAcumulada * Settings::Roseira::nova_agua_percentagem) / 100;
-            // aguaAcumulada = (aguaAcumulada * Settings::Roseira::original_agua_percentagem) / 100;
-            // nutrientesAcumulados = Settings::Roseira::original_nutrientes;
-            // jardim.adicionaPlanta(linhaViz, colViz, new Roseira());
+            Roseira* novaRoseira = new Roseira();
+            int aguaNova = (aguaAcumulada * Settings::Roseira::nova_agua_percentagem) / 100;
+            novaRoseira->aguaAcumulada = aguaNova;
+            novaRoseira->nutrientesAcumulados = Settings::Roseira::nova_nutrientes;
+
+            aguaAcumulada = (aguaAcumulada * Settings::Roseira::original_agua_percentagem) / 100;
+            nutrientesAcumulados = Settings::Roseira::original_nutrientes;
+
+            jardim.adicionaPlanta(linhaViz, colViz, novaRoseira);
         }
     }
 }

@@ -100,6 +100,12 @@ private:
 
     // Helper para criar ferramentas
     class Ferramenta* criaFerramenta(char tipo) const;
+
+    // Helper para cópia profunda (save/load)
+    Jardim* copiaJardim(const Jardim* original) const;
+    Jardineiro* copiaJardineiro(const Jardineiro* original) const;
+    class Planta* copiaPlanta(const class Planta* original) const;
+    class Ferramenta* copiaFerramenta(const class Ferramenta* original) const;
 };
 
 #endif

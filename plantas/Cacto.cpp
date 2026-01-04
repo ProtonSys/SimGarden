@@ -72,8 +72,7 @@ void Cacto::avancaInstante(Posicao& pos, Jardim& jardim, int linha, int col) {
         // Tentar multiplicar para vizinho aleatório
         int linhaViz, colViz;
         if (jardim.temVizinhoAleatorio(linha, col, linhaViz, colViz)) {
-            // TODO: Adicionar nova planta na posição vizinha
-            // jardim.adicionaPlanta(linhaViz, colViz, new Cacto());
+            jardim.adicionaPlanta(linhaViz, colViz, new Cacto());
         }
     }
 }

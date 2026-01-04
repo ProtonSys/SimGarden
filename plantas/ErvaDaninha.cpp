@@ -27,9 +27,8 @@ void ErvaDaninha::avancaInstante(Posicao& pos, Jardim& jardim, int linha, int co
             if (jardim.temVizinhoVazio(linha, col, linhaViz, colViz)) {
                 // Nova planta fica com 5 nutrientes
                 // Planta original fica com 5 nutrientes
-                // TODO: Implementar criação de nova planta
-                // nutrientesAcumulados = Settings::ErvaDaninha::original_nutrientes;
-                // jardim.adicionaPlanta(linhaViz, colViz, new ErvaDaninha());
+                nutrientesAcumulados = Settings::ErvaDaninha::original_nutrientes;
+                jardim.adicionaPlanta(linhaViz, colViz, new ErvaDaninha());
             }
         }
     }
