@@ -29,7 +29,7 @@
  * @brief Construtor - Inicializa o simulador
  *
  * NOTA: Jardim começa nullptr (será criado pelo comando 'jardim')
- *       Jardineiro é criado imediatamente com unique_ptr
+ *       Jardineiro é criado imediatamente com unique_ptrjarim
  */
 Simulator::Simulator()
     : jardim(nullptr), jardineiro(std::make_unique<Jardineiro>()),
